@@ -1,0 +1,56 @@
+#!/usr/bin/python
+import json,time,os
+from tc import titlecase
+
+listpage = """<html>
+<head>
+<title>Markov's Fanfics - Index</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<h1>Index</h1>
+<h6><em>Available in <a href="fanfics.json">JSON</a> format.</em></h6>
+<p>There {article} {count!s} fanfic{plural}.</p>
+{list}
+<hr noshade>
+<p><em>Generated at {date}</em></p>
+</body>
+</html>"""
+
+def getFanfics():
+	fanfics = ["www/"+os.path.splitext(f)[0] for f in os.listdir("www") if f not in ("index.html","fanfics.json")]
+	fanfics = list(set(fanfics))
+	return fanfics
+
+def makeListPage():
+	fanfics = getFanfics()
+	plural = len(fanfics) != 1
+	article = "is"
+	ps = ""
+	if plural:
+		article = "are"
+		ps = "s"
+	lt = "<ul>\n"
+	for fanfic in fanfics:
+		title = titlecase(' '.join(fanfic[4:].split("_")[:-1]))
+		lt += "<li><a href='{0}.html'>{1}</a> (<a href='{0}.txt'>text</a>)</li>\n".format(fanfic[4:],title)
+	lt += "</ul>"
+	out = listpage.format(article=article,count=len(fanfics),plural=ps,list=lt,date=time.strftime("%A %d, %Y %H:%M:%S"))
+	with open("www/index.html","w") as f:
+		f.write(out)
+
+def getContents(filename):
+	with open(filename) as f:
+		return f.read()
+
+def makeJSON():
+	fanfics = getFanfics()
+	resp = {}
+	for fanfic in fanfics:
+		resp[titlecase(' '.join(fanfic[4:].split("_")[:-1]))] = getContents(fanfic+".txt").strip()
+	out = json.dumps(resp)
+	with open("www/fanfics.json","w") as f:
+		f.write(out)
+
+makeListPage()
+makeJSON()

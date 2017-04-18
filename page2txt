@@ -1,0 +1,17 @@
+#!/usr/bin/python
+import sys
+import os.path as fs
+txt = ""
+with open(sys.argv[1]) as f:
+	txt = f.read().strip()
+name,ext = fs.splitext(sys.argv[1])
+textfile = name+".txt"
+
+# print sys.argv[1], "to", textfile
+
+txt = txt[txt.find("<p>"):txt.find("</body>")].strip()
+txt = txt[3:-4]
+txt = txt.replace("</p><p>","\n\n")
+
+with open(textfile,"w") as f:
+	f.write(txt)
